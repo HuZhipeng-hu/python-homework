@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>心理健康自测平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google Fonts 思源黑体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', 'Microsoft YaHei', Arial, sans-serif;
+            background: #f4f8fb;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background: #1976d2;
+            color: #fff;
+            padding: 32px 0 16px 0;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            letter-spacing: 2px;
+        }
+        .header .subtitle {
+            font-size: 1.2em;
+            margin-top: 8px;
+            color: #e3f2fd;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(25, 118, 210, 0.08);
+            padding: 36px 32px 32px 32px;
+        }
+        .disclaimer {
+            background: #e3f2fd;
+            border-left: 6px solid #1976d2;
+            padding: 18px 24px;
+            margin-bottom: 28px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .steps-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 18px;
+            color: #1976d2;
+        }
+        .steps-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+        }
+        .steps-table td {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 22px 18px;
+            font-size: 1.1em;
+            vertical-align: top;
+            border: none;
+        }
+        .steps-table td:first-child {
+            color: #1976d2;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            width: 70px;
+        }
+        .start-btn {
+            margin-top: 36px;
+            padding: 14px 48px;
+            font-size: 1.2em;
+            background: linear-gradient(90deg, #1976d2 60%, #42a5f5 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+            transition: background 0.2s;
+        }
+        .start-btn:hover {
+            background: linear-gradient(90deg, #1565c0 60%, #1976d2 100%);
+        }
+        .footer {
+            text-align: center;
+            color: #888;
+            font-size: 0.95em;
+            margin: 40px 0 10px 0;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 16px 4px; }
+            .header h1 { font-size: 2em; }
+            .steps-table td { font-size: 1em; padding: 12px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>心理健康自测平台</h1>
+        <div class="subtitle">抑郁与焦虑风险自助筛查</div>
+    </div>
+    <div class="container">
+        <div class="disclaimer">
+            <b>免责声明：</b>本检测工具仅供参考，不能替代专业医生的诊断。如有严重心理困扰，请及时寻求专业帮助。您的所有信息将严格保密，仅用于本次自测。
+        </div>
+        <div class="steps-title">检测流程</div>
+        <table class="steps-table">
+            <tr>
+                <td>1</td>
+                <td>填写您的基本信息（姓名、年龄、性别）。</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>完成抑郁症筛查问卷。</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>完成焦虑症筛查问卷。</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>查看并打印检测结果。请注意，检测结果不具备诊断作用，仅供参考。</td>
+            </tr>
+        </table>
+        <div style="text-align:center;">
+            <button class="start-btn" onclick="window.location.href='/start'">开始自测</button>
+        </div>
+    </div>
+    <div class="footer">
+        &copy; 2024 心理健康自测平台 | 由专业心理团队支持 | <a href="#" style="color:#1976d2;text-decoration:none;">隐私政策</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>抑郁症检测</title>
+</head>
+<body class="bg-gradient-to-br from-purple-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div class="px-8 py-6 bg-gradient-to-r from-purple-500 to-indigo-500 text-white">
+      <h1 class="text-2xl font-bold text-center">抑郁症检测</h1>
+    </div>
+    <!-- 用户信息 -->
+    <div id="step-info" class="p-6 space-y-4">
+      <h2 class="text-xl font-semibold text-gray-700">1. 填写个人信息</h2>
+      <div class="space-y-3">
+        <label class="block">
+          <span class="text-gray-600">姓名</span>
+          <input id="name" type="text" placeholder="请输入您的姓名" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300" />
+        </label>
+        <label class="block">
+          <span class="text-gray-600">年龄</span>
+          <input id="age" type="number" placeholder="请输入您的年龄" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300" />
+        </label>
+        <label class="block">
+          <span class="text-gray-600">性别</span>
+          <select id="gender" class="mt-1 block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300">
+            <option value="男">男</option>
+            <option value="女">女</option>
+          </select>
+        </label>
+      </div>
+      <button id="start-btn" class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium transition">开始检测</button>
+    </div>
+    <!-- 问题回答 -->
+    <div id="step-questions" class="hidden p-6 space-y-6">
+      <div>
+        <div class="flex justify-between items-center mb-2">
+          <h2 id="question-counter" class="text-lg font-semibold text-gray-700"></h2>
+          <div class="w-2/3 bg-gray-200 rounded-full h-2.5">
+            <div id="progress-bar" class="h-2.5 rounded-full bg-purple-500" style="width:0%"></div>
+          </div>
+        </div>
+        <p id="question-text" class="text-gray-800 text-lg"></p>
+      </div>
+      <textarea id="answer-text" rows="4" placeholder="在此输入您的回答..." class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"></textarea>
+      <button id="answer-btn" class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium transition">提交回答</button>
+    </div>
+    <!-- 结果展示 -->
+    <div id="step-result" class="hidden p-6 text-center">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">检测结果</h2>
+      <p id="result-text" class="text-lg"></p>
+      <button id="restart-btn" class="mt-6 py-2 px-6 bg-gray-300 hover:bg-gray-400 rounded-lg transition">重新检测</button>
+    </div>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById('start-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const stepInfo = document.getElementById('step-info');
+    const stepQ = document.getElementById('step-questions');
+    const stepR = document.getElementById('step-result');
+    const questionText = document.getElementById('question-text');
+    const questionCounter = document.getElementById('question-counter');
+    const progressBar = document.getElementById('progress-bar');
+    const answerText = document.getElementById('answer-text');
+    const resultText = document.getElementById('result-text');
+
+    let chatId=null, questions = [], idx = 0;
+    startBtn.onclick = async () => {
+      const name = document.getElementById('name').value.trim();
+      const age = document.getElementById('age').value;
+      const gender = document.getElementById('gender').value;
+      if (!name || !age) return alert('请完整填写信息');
+
+      const res = await fetch('/start_chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name, age, gender}) });
+      chatId = (await res.json()).chat_id;
+
+      const qRes = await fetch('/get_questions');
+      questions = (await qRes.json()).questions;
+      
+
+      stepInfo.classList.add('hidden');
+      stepQ.classList.remove('hidden');
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[idx];
+      questionCounter.textContent = `问题 ${idx+1} / ${questions.length}`;
+      questionText.textContent = q.text;
+      answerText.value = '';
+      progressBar.style.width = `${((idx)/questions.length)*100}%`;
+    }
+
+    document.getElementById('answer-btn').onclick = async () => {
+      const answer = answerText.value.trim(); if(!answer) return alert('请输入回答');
+      await fetch('/answer_question',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chat_id:chatId, q_id:questions[idx].id, answer}) });
+      idx++;
+      if(idx < questions.length) showQuestion();
+      else showResult();
+    }
+
+    function showResult(){
+      fetch('/query_depression',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({chat_id:chatId})})
+      .then(res=>res.json()).then(data=>{
+        stepQ.classList.add('hidden');
+        stepR.classList.remove('hidden');
+        resultText.textContent = `您的总得分是 ${data.sum_score}，${data.has_depression? '可能患有抑郁症，请及时寻求专业帮助。':'目前没有明显的抑郁症症状。'}`;
+        resultText.classList.add(data.has_depression? 'text-red-600':'text-green-600');
+      });
+    }
+
+    restartBtn.onclick = ()=> location.reload();
+  </script>
+</body>
+</html>

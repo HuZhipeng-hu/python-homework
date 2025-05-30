@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>心理评估问题 - 心理健康自测平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Noto Sans SC', 'Microsoft YaHei', Arial, sans-serif; background: #f4f8fb; }
+        .container { max-width: 800px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(25, 118, 210, 0.08); padding: 36px 32px 32px 32px; }
+        h2 { text-align: center; color: #1976d2; margin-bottom: 24px; }
+        .question-container { margin-bottom: 32px; }
+        .question-text { font-size: 1.1em; margin-bottom: 16px; color: #333; }
+        .answer-input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; min-height: 100px; margin-bottom: 16px; }
+        .submit-btn { padding: 12px 24px; background: #1976d2; color: #fff; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; }
+        .submit-btn:hover { background: #1565c0; }
+        .progress-bar { margin-bottom: 24px; }
+        .progress-text { text-align: center; margin-bottom: 8px; color: #666; }
+        .progress { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #1976d2; transition: width 0.3s ease; }
+        .error-message { color: #d32f2f; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>心理评估问题</h2>
+        <div class="progress-bar">
+            <div class="progress-text">问题进度：<span id="currentQuestion">1</span>/<span id="totalQuestions">20</span></div>
+            <div class="progress">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+        <div class="question-container">
+            <div class="question-text" id="questionText"></div>
+            <textarea class="answer-input" id="answerInput" placeholder="请输入您的回答..."></textarea>
+            <button class="submit-btn" onclick="submitAnswer()">提交回答</button>
+        </div>
+    </div>
+
+    <script>
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let chatId = localStorage.getItem('chat_id');
+
+        if (!chatId) {
+            window.location.href = '/start';
+        }
+
+        async function loadQuestions() {
+            try {
+                const response = await fetch('/get_questions');
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    questions = result.questions;
+                    document.getElementById('totalQuestions').textContent = questions.length;
+                    showCurrentQuestion();
+                } else {
+                    alert('获取问题失败：' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('获取问题失败，请刷新页面重试');
+            }
+        }
+
+        function showCurrentQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const question = questions[currentQuestionIndex];
+                document.getElementById('questionText').textContent = question.text;
+                document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+                document.getElementById('progressFill').style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+                document.getElementById('answerInput').value = '';
+            } else {
+                // 所有问题已回答，跳转到结果页面
+                window.location.href = '/results';
+            }
+        }
+
+        async function submitAnswer() {
+            const answer = document.getElementById('answerInput').value.trim();
+            if (!answer) {
+                alert('请输入您的回答');
+                return;
+            }
+
+            try {
+                const response = await fetch('/answer_question', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        q_id: questions[currentQuestionIndex].id,
+                        answer: answer
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    currentQuestionIndex++;
+                    showCurrentQuestion();
+                } else {
+                    alert('提交回答失败：' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('提交回答失败，请重试');
+            }
+        }
+
+        // 页面加载时获取问题列表
+        loadQuestions();
+    </script>
+</body>
+</html> 

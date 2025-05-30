@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>开始自测 - 心理健康自测平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Noto Sans SC', 'Microsoft YaHei', Arial, sans-serif; background: #f4f8fb; }
+        .container { max-width: 520px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(25, 118, 210, 0.08); padding: 36px 32px 32px 32px; }
+        h2 { text-align: center; color: #1976d2; }
+        form label { display: block; margin-top: 18px; font-weight: bold; }
+        form input, form select, form textarea { width: 100%; padding: 8px; margin-top: 6px; border-radius: 5px; border: 1px solid #ccc; font-size: 1em; }
+        .submit-btn { margin-top: 28px; width: 100%; padding: 12px; background: #1976d2; color: #fff; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; }
+        .submit-btn:hover { background: #1565c0; }
+        .error-message { color: #d32f2f; margin-top: 4px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>请填写您的基本信息</h2>
+        <form id="startForm" onsubmit="return handleSubmit(event)">
+            <label>姓名</label>
+            <input type="text" name="name" required>
+
+            <label>年龄</label>
+            <input type="number" name="age" min="5" max="120" required>
+
+            <label>性别</label>
+            <select name="gender" required>
+                <option value="">请选择</option>
+                <option value="男">男</option>
+                <option value="女">女</option>
+                <option value="其他">其他</option>
+            </select>
+
+            <label>教育程度</label>
+            <select name="education">
+                <option value="">请选择</option>
+                <option value="小学及以下">小学及以下</option>
+                <option value="初中">初中</option>
+                <option value="高中/中专">高中/中专</option>
+                <option value="大专">大专</option>
+                <option value="本科">本科</option>
+                <option value="研究生及以上">研究生及以上</option>
+            </select>
+
+            <label>婚姻状况</label>
+            <select name="marital">
+                <option value="">请选择</option>
+                <option value="未婚">未婚</option>
+                <option value="已婚">已婚</option>
+                <option value="离异">离异</option>
+                <option value="丧偶">丧偶</option>
+            </select>
+
+            <label>职业/在读情况</label>
+            <input type="text" name="job" placeholder="如：学生、教师、工程师等">
+
+            <label>居住地类型</label>
+            <select name="residence">
+                <option value="">请选择</option>
+                <option value="城市">城市</option>
+                <option value="农村">农村</option>
+            </select>
+
+            <label>是否有慢性疾病</label>
+            <select name="chronic">
+                <option value="">请选择</option>
+                <option value="无">无</option>
+                <option value="有">有</option>
+            </select>
+
+            <label>家族中是否有抑郁/精神疾病史</label>
+            <select name="family_history">
+                <option value="">请选择</option>
+                <option value="无">无</option>
+                <option value="有">有</option>
+                <option value="不清楚">不清楚</option>
+            </select>
+
+            <label>近期是否经历重大生活事件</label>
+            <input type="text" name="life_event" placeholder="如：失业、亲人去世、离婚等">
+
+            <label>最近一月睡眠状况</label>
+            <select name="sleep">
+                <option value="">请选择</option>
+                <option value="良好">良好</option>
+                <option value="一般">一般</option>
+                <option value="较差">较差</option>
+            </select>
+
+            <label>运动频率</label>
+            <select name="exercise">
+                <option value="">请选择</option>
+                <option value="几乎每天">几乎每天</option>
+                <option value="每周1-3次">每周1-3次</option>
+                <option value="偶尔">偶尔</option>
+                <option value="很少或没有">很少或没有</option>
+            </select>
+
+            <label>饮酒/吸烟情况</label>
+            <select name="smoke_drink">
+                <option value="">请选择</option>
+                <option value="无">无</option>
+                <option value="偶尔">偶尔</option>
+                <option value="经常">经常</option>
+            </select>
+
+            <label>近一月情绪状态自评</label>
+            <textarea name="mood" rows="2" placeholder="如：经常感到低落、无助、兴趣减退等"></textarea>
+
+            <button class="submit-btn" type="submit">下一步</button>
+        </form>
+    </div>
+
+    <script>
+        async function handleSubmit(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = {
+                name: formData.get('name'),
+                age: parseInt(formData.get('age')),
+                gender: formData.get('gender')
+            };
+
+            try {
+                const response = await fetch('/start_chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    // 保存chat_id到localStorage
+                    localStorage.setItem('chat_id', result.chat_id);
+                    // 跳转到问题页面
+                    window.location.href = '/questions';
+                } else {
+                    alert('提交失败：' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('提交失败，请稍后重试');
+            }
+
+            return false;
+        }
+    </script>
+</body>
+</html>

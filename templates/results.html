@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>心理评估结果</title>
+  <style>
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    .container {
+      max-width: 850px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    .score {
+      font-size: 28px;
+      font-weight: bold;
+      color: #e74c3c;
+    }
+    .warning {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    .info {
+      color: #27ae60;
+    }
+    .section {
+      margin-top: 25px;
+    }
+    .response-item {
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      background-color: #fafafa;
+    }
+    .button {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .button:hover {
+      background-color: #2980b9;
+    }
+    .loading {
+      font-size: 16px;
+      color: #999;
+      margin-top: 20px;
+    }
+    .chat-id {
+      color: #888;
+      font-size: 14px;
+    }
+    pre {
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>心理评估结果</h1>
+
+    <div id="loading" class="loading">正在加载评估结果，请稍候...</div>
+
+    <div id="resultSection" style="display: none;">
+      <div class="section">
+        <h2>评估总分：<span id="totalScore" class="score">0</span></h2>
+        <div class="chat-id">Chat ID: <span id="chatIdDisplay"></span></div>
+        <p id="depressionStatus"></p>
+      </div>
+
+      <div class="section">
+        <h3>专业分析</h3>
+        <pre id="analysis"></pre>
+      </div>
+
+      <div class="section">
+        <h3>详细答题记录</h3>
+        <div id="responses"></div>
+      </div>
+
+      <a href="/start" class="button">重新评估</a>
+    </div>
+  </div>
+
+  <script>
+    
+    console.log('【DEBUG】results.html script 已执行');
+
+    const chatId = localStorage.getItem('chat_id');
+    document.getElementById('chatIdDisplay').textContent = chatId || '（未获取到）';
+
+
+    fetch('/query_depression', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('【DEBUG】返回数据:', data);
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('resultSection').style.display = 'block';
+
+      if (data.code !== 0) {
+        alert('获取评估失败：' + data.message);
+        return;
+      }
+
+      document.getElementById('totalScore').textContent = data.sum_score;
+      document.getElementById('depressionStatus').innerHTML = data.has_depression
+        ? '<span class="warning">注意：结果显示存在抑郁风险，建议及时寻求专业帮助。</span>'
+        : '<span class="info">评估结果显示当前心理状态良好。</span>';
+
+      document.getElementById('analysis').innerText = data.analysis || '未能获取专业分析结果。';
+
+      const responsesContainer = document.getElementById('responses');
+      responsesContainer.innerHTML = ''; // 清空旧内容
+      data.data.forEach((resp, i) => {
+        const div = document.createElement('div');
+        div.className = 'response-item';
+        div.innerHTML = `
+          <strong>问题 ${i + 1}：</strong> ${resp.question || '（缺失）'}<br/>
+          <strong>回答：</strong> ${resp.answer || '（缺失）'}<br/>
+          <strong>得分：</strong> ${resp.score || '0'}
+        `;
+        responsesContainer.appendChild(div);
+      });
+    })
+    .catch(err => {
+      console.error('【DEBUG】请求出错:', err);
+      document.getElementById('loading').textContent = '获取评估结果失败，请稍后重试。';
+    });
+
+    localStorage.removeItem('chat_id');
+  </script>
+</body>
+</html>
